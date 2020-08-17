@@ -36,6 +36,7 @@ const saveStorage = (storage) => {
 
 
 
+
 // actions
 
 export const logOutAction = () => (dispatch, getState) => {
@@ -44,6 +45,7 @@ export const logOutAction = () => (dispatch, getState) => {
         type: LOG_OUT
     });
     localStorage.removeItem('storage')
+    localStorage.removeItem('favs')
 }
 
 

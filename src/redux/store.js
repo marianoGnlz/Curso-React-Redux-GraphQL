@@ -1,6 +1,6 @@
 import {createStore, combineReducers, compose, applyMiddleware} from 'redux';
 import userReducer, {restoreSessionAction} from './userDuck';
-import charsReducer, {getCharactersAction} from './charsDuck';
+import charsReducer, {getCharactersAction, restoreFavsStorage} from './charsDuck';
 import thunk from 'redux-thunk';
 
 
@@ -18,5 +18,6 @@ export default function generateStore(){
     );
     getCharactersAction()(store.dispatch, store.getState);
     restoreSessionAction()(store.dispatch)
+    restoreFavsStorage()(store.dispatch)
     return store;
 }

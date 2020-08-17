@@ -45,7 +45,27 @@ export default function reducer(state = initialData, action){
     }
 };
 
+// aux
+
+const saveStorageFavs = (storage) => {
+    localStorage.favs = JSON.stringify(storage)
+}
+
 // actions (thunks)
+
+export const restoreFavsStorage = () => (dispatch) => {
+    let favs = localStorage.getItem('favs')
+    favs = JSON.parse(favs)
+    if(favs){
+        dispatch({
+            type: GET_FAVS_SUCCESS,
+            payload: [...favs]
+        })
+    }
+}
+
+
+
 export const retreiveFavs = () => (dispatch, getState) => {
     dispatch({
         type: GET_FAVS,
@@ -57,6 +77,7 @@ export const retreiveFavs = () => (dispatch, getState) => {
                 type: GET_FAVS_SUCCESS,
                 payload: [...array]
             })
+            saveStorageFavs([...array])
         })
         .catch( e => {
             dispatch({

@@ -168,6 +168,7 @@ export function getCharactersAction(){
                 type: GET_CHARACTERS_SUCCESS,
                 payload: data.characters.results
             })
+            saveStorage(getState());
             dispatch({
                 type: UPDATE_PAGE,
                 payload: data.characters.info.next ? data.characters.info.next : 1

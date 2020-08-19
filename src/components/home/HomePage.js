@@ -22,7 +22,6 @@ function Home({chars, removeCharacterAction, addToFavoritesAction}) {
         addToFavoritesAction()
     }
     
-
     const nextCharacter = () => (removeCharacterAction())
 
     return (

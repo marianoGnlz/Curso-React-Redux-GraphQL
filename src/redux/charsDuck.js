@@ -74,10 +74,6 @@ export const restoreFavsStorage = () => (dispatch, getState) => {
             payload: storage.characters.favorites
         })
     }
-    // const charactersArray = getState().characters.array;
-    // const favoritesArray = getState().characters.favorites;
-
-    // charactersArray.filter((character) => (character !== ))
 }
 
 
@@ -109,7 +105,8 @@ export const addToFavoritesAction = () => (dispatch, getState) => {
     const {uid} = getState().user
     let character = array.shift();
     favorites.push(character);
-    updateDB(favorites, uid)
+    updateDB(favorites, uid);
+    saveStorage(getState());
     dispatch({
         type: ADD_TO_FAVORITES,
         payload: { array:[...array], favorites:[...favorites] }

@@ -7,7 +7,7 @@ import LoginPage from './components/login/LoginPage'
 const PrivateRoute = ({path, component, ...rest}) => {
     let storage = localStorage.getItem('storage');
     storage = JSON.parse(storage);
-    if(storage && storage.user){
+    if(storage && storage.user.loggedIn){
         return <Route path={path} component={component} />
     } else {
         return <Redirect to={'/login'} {...rest} />

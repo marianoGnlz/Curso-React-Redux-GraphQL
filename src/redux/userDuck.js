@@ -45,7 +45,7 @@ export const logOutAction = () => (dispatch, getState) => {
 export const restoreSessionAction = () => (dispatch) => {
     let storage = localStorage.getItem('storage');
     storage = JSON.parse(storage);
-    if(storage && storage.user){
+    if(storage && storage.user.loggedIn){
         dispatch({
             type: LOGIN_SUCCESS,
             payload: storage.user

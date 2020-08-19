@@ -30,12 +30,6 @@ export default function reducer(state = initialData,action){
 
 // aux
 
-const saveStorage = (storage) => {
-    localStorage.storage = JSON.stringify(storage)
-}
-
-
-
 
 // actions
 
@@ -45,7 +39,6 @@ export const logOutAction = () => (dispatch, getState) => {
         type: LOG_OUT
     });
     localStorage.removeItem('storage')
-    localStorage.removeItem('favs')
 }
 
 
@@ -77,7 +70,6 @@ export const doGoogleLoginAction = () => (dispatch, getState) => {
                     photoURL: user.photoURL
                 }
             })
-            saveStorage(getState());
             retreiveFavs()(dispatch, getState);
         })
         .catch( e => {

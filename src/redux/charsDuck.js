@@ -1,13 +1,24 @@
-import axios from 'axios';
+// import axios from 'axios';
 import { updateDB, getFavs} from '../firebase';
+import ApolloClient, {gql} from 'apollo-boost'
+
+
 // constanst 
 const initialData = {
     fetching: false,
     array: [],
     current: {},
-    favorites: []
+    favorites: [],
+    nextPage: 1
 }
-const URL = "https://rickandmortyapi.com/api/character";
+// const URL = "https://rickandmortyapi.com/api/character";
+
+const client = new ApolloClient({
+    uri: "https://rickandmortyapi.com/graphql"
+})
+
+const UPDATE_PAGE = "UPDATE_PAGE"; 
+
 const GET_CHARACTERS = "GET_CHARACTERS"; 
 const GET_CHARACTERS_SUCCESS = "GET_CHARACTERS_SUCCESS"; 
 const GET_CHARACTERS_ERROR = "GET_CHARACTERS_ERROR"; 
@@ -24,6 +35,8 @@ const GET_FAVS_ERROR = "GET_FAVS_ERROR";
 
 export default function reducer(state = initialData, action){
     switch(action.type){
+        case UPDATE_PAGE:
+            return {...state, nextPage: action.payload }
         case GET_FAVS:
             return {...state, fetching: true}
         case GET_FAVS_ERROR:
@@ -45,23 +58,26 @@ export default function reducer(state = initialData, action){
     }
 };
 
-// aux
 
-const saveStorageFavs = (storage) => {
-    localStorage.favs = JSON.stringify(storage)
+const saveStorage = (storage) => {
+    localStorage.storage = JSON.stringify(storage)
 }
 
 // actions (thunks)
 
-export const restoreFavsStorage = () => (dispatch) => {
-    let favs = localStorage.getItem('favs')
-    favs = JSON.parse(favs)
-    if(favs){
+export const restoreFavsStorage = () => (dispatch, getState) => {
+    let storage = localStorage.getItem('storage')
+    storage = JSON.parse(storage)
+    if(storage && storage.characters.favorites){
         dispatch({
             type: GET_FAVS_SUCCESS,
-            payload: [...favs]
+            payload: storage.characters.favorites
         })
     }
+    // const charactersArray = getState().characters.array;
+    // const favoritesArray = getState().characters.favorites;
+
+    // charactersArray.filter((character) => (character !== ))
 }
 
 
@@ -77,7 +93,7 @@ export const retreiveFavs = () => (dispatch, getState) => {
                 type: GET_FAVS_SUCCESS,
                 payload: [...array]
             })
-            saveStorageFavs([...array])
+            saveStorage(getState());
         })
         .catch( e => {
             dispatch({
@@ -104,6 +120,10 @@ export const addToFavoritesAction = () => (dispatch, getState) => {
 export const removeCharacterAction = () => (dispatch, getState) => {
     const { array } = getState().characters;
     array.shift();
+    if(array.length === 0){
+        getCharactersAction()(dispatch, getState)
+        return;
+    }
     dispatch({
         type: REMOVE_CHARACTER,
         payload: [...array]
@@ -112,22 +132,64 @@ export const removeCharacterAction = () => (dispatch, getState) => {
 
 
 export function getCharactersAction(){
+    const query = gql`
+        query ($page:Int){
+                characters(page:$page){
+                info{
+                    count
+                    pages
+                    next
+                    prev
+                }
+                results{
+                    name
+                    image
+                }
+                }
+            }
+    `;
     return (dispatch, getState) => {
         dispatch({
             type: GET_CHARACTERS
         });
-        return axios.get(URL)
-            .then(res => {
+        let { nextPage } = getState().characters;
+        return client.query({
+            query,
+            variables:{
+                page: nextPage
+            }
+        })
+        .then(({data, error}) => {
+            if(error){
                 dispatch({
-                    type: GET_CHARACTERS_SUCCESS,
-                    payload: res.data.results
+                    type: GET_CHARACTERS_ERROR,
+                    payload: error
                 })
+                return;
+            }
+            dispatch({
+                type: GET_CHARACTERS_SUCCESS,
+                payload: data.characters.results
             })
-            .catch(err => {
-              dispatch({
-                  type: GET_CHARACTERS_ERROR,
-                  payload: err.response.message
-              })  
+            dispatch({
+                type: UPDATE_PAGE,
+                payload: data.characters.info.next ? data.characters.info.next : 1
             })
+        })
     }
 }
+//         return axios.get(URL)
+//             .then(res => {
+//                 dispatch({
+//                     type: GET_CHARACTERS_SUCCESS,
+//                     payload: res.data.results
+//                 })
+//             })
+//             .catch(err => {
+//               dispatch({
+//                   type: GET_CHARACTERS_ERROR,
+//                   payload: err.response.message
+//               })  
+//             })
+//     }
+// }
